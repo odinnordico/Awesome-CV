@@ -17,6 +17,9 @@
 .*sw[op]
 *~
 
+### Release ###
+/release/*
+
 ### LateEditor ###
 *.kile
 
