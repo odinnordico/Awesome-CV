@@ -1,22 +1,40 @@
 name: Compile PDFs
 
 on:
-  push: {}
-  pull_request: {}
+  push:
+    tags:
+      - "**"
+  #  pull_request: {}
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container: texlive/texlive:latest
-
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
-
-    - name: Compile
-      run: make
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: examples
-        path: examples/*.pdf
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Compile
+        run: make
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: release/*.pdf
+  create-release:
+    needs:
+      - build
+    permissions:
+      contents: write
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: release
+      - name: Draft release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "release/*.pdf"
+          draft: true
